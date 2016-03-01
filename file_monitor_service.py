@@ -1,11 +1,12 @@
 import os
 import smtplib
 import thread
+import logging, logging.config
 
 class FileMonitorService:
 
-    def __init__(self, logging):
-        self.logging = logging
+    def __init__(self):
+        logging.config.fileConfig('conf/logging.conf')
         self.path_to_watch = "/tmp" #TODO Parameterize
         logging.info("Watching: " + self.path_to_watch)
         self.before = dict ([(f, None) for f in os.listdir (self.path_to_watch)])
@@ -13,17 +14,18 @@ class FileMonitorService:
 
     def monitor_directory(self):
         logging.info("*** begin monitor_directory ***")
-        after = dict ([(f, None) for f in os.listdir (path_to_watch)])
-        added = [f for f in after if not f in before]
-        removed = [f for f in before if not f in after]
+        after = dict ([(f, None) for f in os.listdir (self.path_to_watch)])
+        added = [f for f in after if not f in self.before]
+        removed = [f for f in self.before if not f in after]
         if removed: logging.info("Removed: " + "\n".join(removed))
         if added:
             logging.info("Added: " + "\n".join(added))
+            # thread.start_new_thread(self.run_ftp_mail_thread, ())
             thread.start_new_thread(self.run_ftp_mail_thread, ())
         self.before = after
         logging.info("*** end monitor_directory ***")
 
-    def run_ftp_mail_thread():
+    def run_ftp_mail_thread(self):
         url = "http://www.ewise.com" #TODO
         self.send_mail(url)
 
