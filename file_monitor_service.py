@@ -38,7 +38,7 @@ class FileMonitorService:
             email_port = os.environ['FILE_MONITOR_MAIL_PORT']
             email_recipient = os.environ['FILE_MONITOR_MAIL_RECIPIENT']
             logging.info("mail username: " + email_username)
-            logging.info("mail password: " + **************)
+            logging.info("mail password: **********")
             logging.info("mail host: " + email_host)
             logging.info("mail.port: " + email_port)
             logging.info("mail recipient: " + email_recipient)
