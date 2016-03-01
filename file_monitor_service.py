@@ -8,7 +8,7 @@ class FileMonitorService:
 
     def __init__(self):
         logging.config.fileConfig('conf/logging.conf')
-        self.path_to_watch = "/tmp" #TODO Parameterize
+        self.path_to_watch = os.environ['FILE_MONITOR_PATH_TO_WATCH'] 
         logging.info("Watching: " + self.path_to_watch)
         self.before = dict ([(f, None) for f in os.listdir (self.path_to_watch)])
         logging.info("Before: " + "\n".join(self.before))
@@ -22,13 +22,14 @@ class FileMonitorService:
         if added:
             logging.info("Added: " + "\n".join(added))
             for file in added:
-                thread.start_new_thread(self.run_ftp_mail_thread, (file))
+                thread.start_new_thread(self.run_ftp_mail_thread, (file, self.path_to_watch,))
         self.before = after
         logging.info("*** end monitor_directory ***")
 
-    def run_ftp_mail_thread(self, file):
+    def run_ftp_mail_thread(self, file, path_to_watch):
         logging.info("begin run_ftp_mail_thread")
         logging.info("file: " + file)
+        logging.info("path_to_watch: " + path_to_watch)
         s3_access = os.environ['FILE_MONITOR_S3_ACCESS_KEY']
         s3_secret = os.environ['FILE_MONITOR_S3_SECRET_KEY']
         s3_bucket = os.environ['FILE_MONITOR_S3_BUCKET']
@@ -36,9 +37,10 @@ class FileMonitorService:
         logging.info("s3_bucket: " + s3_bucket)
         logging.info("s3_endpoint: " + s3_endpoint)
         conn = tinys3.Connection(s3_access,s3_secret,tls=True,endpoint=s3_endpoint)
-        f = open(file,'rb')
-        link = conn.upload(file,f,s3_bucket)
-        logging.info("S3 Link: " + link)
+        logging.info("path_to_watch + file: " + path_to_watch + file)
+        f = open(path_to_watch + file,'rb')
+        link = conn.upload(path_to_watch + file,f,s3_bucket)
+        logging.info("S3 Link: " + str(link))
 
         url = "http://www.ewise.com" #TODO
         self.send_mail(url)
