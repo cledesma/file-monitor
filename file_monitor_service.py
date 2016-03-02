@@ -36,14 +36,15 @@ class FileMonitorService:
         s3_endpoint = os.environ['FILE_MONITOR_S3_ENDPOINT']
         logging.info("s3_bucket: " + s3_bucket)
         logging.info("s3_endpoint: " + s3_endpoint)
+        
         conn = tinys3.Connection(s3_access,s3_secret,tls=True,endpoint=s3_endpoint)
         logging.info("path_to_watch + file: " + path_to_watch + file)
         f = open(path_to_watch + file,'rb')
-        link = conn.upload(path_to_watch + file,f,s3_bucket)
-        logging.info("S3 Link: " + str(link))
+        conn.upload(file,f,s3_bucket)
+        link = "https://" + s3_endpoint + "/" + s3_bucket + "/" + file
+        logging.info("S3 Link: " + link)
 
-        url = "http://www.ewise.com" #TODO
-        self.send_mail(url)
+        self.send_mail(link)
         logging.info("end run_ftp_mail_thread")
 
     def send_mail(self,url):
