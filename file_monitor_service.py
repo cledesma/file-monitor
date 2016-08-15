@@ -43,7 +43,7 @@ class FileMonitorService:
         logging.info("path_to_watch + file: " + path_to_watch + file)
         f = open(path_to_watch + file,'rb')
         conn.upload(file,f,s3_bucket)
-        link = proxy + "/" + file
+        link = proxy + "/static/" + file
         logging.info("S3 Link: " + link)
 
         self.send_mail(link)
