@@ -34,14 +34,16 @@ class FileMonitorService:
         s3_secret = os.environ['FILE_MONITOR_S3_SECRET_KEY']
         s3_bucket = os.environ['FILE_MONITOR_S3_BUCKET']
         s3_endpoint = os.environ['FILE_MONITOR_S3_ENDPOINT']
+        proxy = os.environ['FILE_MONITOR_PROXY']
         logging.info("s3_bucket: " + s3_bucket)
         logging.info("s3_endpoint: " + s3_endpoint)
+        logging.info("proxy: " + proxy)
         
         conn = tinys3.Connection(s3_access,s3_secret,tls=True,endpoint=s3_endpoint)
         logging.info("path_to_watch + file: " + path_to_watch + file)
         f = open(path_to_watch + file,'rb')
         conn.upload(file,f,s3_bucket)
-        link = "https://" + s3_endpoint + "/" + s3_bucket + "/" + file
+        link = proxy + "/" + file
         logging.info("S3 Link: " + link)
 
         self.send_mail(link)
@@ -55,18 +57,20 @@ class FileMonitorService:
             email_host = os.environ['FILE_MONITOR_MAIL_HOST']
             email_port = os.environ['FILE_MONITOR_MAIL_PORT']
             email_recipient = os.environ['FILE_MONITOR_MAIL_RECIPIENT']
+            proxy = os.environ['FILE_MONITOR_PROXY']
             logging.info("mail username: " + email_username)
             logging.info("mail password: **********l")
             logging.info("mail host: " + email_host)
             logging.info("mail.port: " + email_port)
             logging.info("mail recipient: " + email_recipient)
+            logging.info("proxy: " + proxy)
             to_list = []
             cc_list = []
             bcc_list = email_recipient
             header  = 'From: %s\n' % os.environ['FILE_MONITOR_MAIL_USERNAME']
             header += 'To: %s\n' % ','.join(to_list)
             header += 'Cc: %s\n' % ','.join(cc_list)
-            header += 'Subject: %s\n\n' % "Client logs"
+            header += 'Subject: %s %s\n\n' % ("Client logs", proxy)
             message = header + url
             smtp_server = smtplib.SMTP(email_host, email_port)
             smtp_server.starttls()
